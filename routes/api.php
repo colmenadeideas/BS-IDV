@@ -1,7 +1,7 @@
-
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,10 +18,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('register', 'API\RegisterController@register');
-Route::get('hello', 'API\RegisterController@hello');
-Route::post('login', 'API\RegisterController@login');
-  
-Route::middleware('auth:api')->group( function () {
-	Route::resource('products', 'API\ProductController');
+Route::post('login', 'API\AuthController@login');
+Route::post('register', 'API\AuthController@register');
+Route::post('registerpp', 'API\AuthController@registerpp');
+
+Route::middleware('auth:api')->group(function(){
+	Route::post('details', 'API\AuthController@get_user_details_info'); 
 });
