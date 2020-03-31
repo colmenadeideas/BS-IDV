@@ -83,7 +83,7 @@ class AuthController extends Controller
   public function registerpp(Request $request){
     $validator = Validator::make($request->all(), [ 
 
-      'name' => 'required', 
+      'name' => 'required'
 
     ]);
 
@@ -93,8 +93,9 @@ class AuthController extends Controller
 
 
     }
-
-    echo "holaaaaa qweqweqweqwe";
+    $data = $request->all(); 
+    return $data;
+    //echo "holaaaaa qweqweqweqwe";
   }
 
   public function get_user_details_info() 
