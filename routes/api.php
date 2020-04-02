@@ -25,4 +25,5 @@ Route::post('registerpp', 'API\AuthController@registerpp');
 
 Route::middleware('auth:api')->group(function(){
 	Route::post('details', 'API\AuthController@get_user_details_info'); 
+	Route::post('schedule/edit', 'API\ScheduleController@edit')->name('edit schudele')->middleware('permission:edit schudele');
 });
