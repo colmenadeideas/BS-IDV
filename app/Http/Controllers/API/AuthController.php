@@ -80,22 +80,48 @@ class AuthController extends Controller
 
   }
   
-  public function registerpp(Request $request){
-    $validator = Validator::make($request->all(), [ 
-
-      'name' => 'required'
-
-    ]);
-
-    if ($validator->fails()) { 
-
-      return response()->json([ 'error'=> $validator->errors() ]);
-
-
-    }
-    $data = $request->all(); 
-    return $data;
-    //echo "holaaaaa qweqweqweqwe";
+   public function add(Request $request)
+  {
+        $this->validate($request, [
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|same:confirm-password',
+            'roles' => 'required'
+        ]);
+    
+        $input = $request->all();
+        $input['password'] = Hash::make($input['password']);
+    
+        $user = User::create($input);
+        $user->assignRole($request->input('roles'));
+    
+        return redirect()->route('users.index')
+                        ->with('success','User created successfully');
+  }
+  public function update(Request $request, $id)
+  
+        $this->validate($request, [
+            'name' => 'required',
+            'email' => 'required|email|unique:users,email,'.$id,
+            'password' => 'same:confirm-password',
+            'roles' => 'required'
+        ]);
+    
+        $input = $request->all();
+        if(!empty($input['password'])){ 
+            $input['password'] = Hash::make($input['password']);
+        }else{
+            $input = array_except($input,array('password'));    
+        }
+    
+        $user = User::find($id);
+        $user->update($input);
+        DB::table('model_has_roles')->where('model_id',$id)->delete();
+    
+        $user->assignRole($request->input('roles'));
+    
+        return redirect()->route('users.index')
+                        ->with('success','User updated successfully');
   }
 
   public function get_user_details_info() 
