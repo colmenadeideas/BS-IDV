@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth; 
 use Symfony\Component\HttpFoundation\Response;
-
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller 
 {
@@ -30,9 +30,11 @@ class AuthController extends Controller
 
       $user = Auth::user(); 
       
+      $token['role'] = $user->getRoleNames();
       $token['token'] = $this->get_user_token($user,"TestToken");
-
+      
       $response = self::HTTP_OK;
+      
 
       return $this->get_http_response( "success", $token, $response );
 
@@ -55,6 +57,7 @@ class AuthController extends Controller
       'email' => 'required|email', 
       'password' => 'required', 
       'password_confirmation' => 'required|same:password', 
+      'role' => 'required', 
 
     ]);
 
@@ -67,12 +70,15 @@ class AuthController extends Controller
     $data = $request->all(); 
 
     $data['password'] = Hash::make($data['password']);
-
+    $role = $data['role'];
     $user = User::create($data); 
+
+    $user->assignRole($role);
 
     $success['token'] = $this->get_user_token($user,"TestToken");
 
     $success['name'] =  $user->name;
+    $success['role'] = $user->getRoleNames();
 
     $response =  self::HTTP_CREATED;
 

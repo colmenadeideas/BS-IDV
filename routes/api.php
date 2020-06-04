@@ -26,4 +26,8 @@ Route::post('registerpp', 'API\AuthController@registerpp');
 Route::middleware('auth:api')->group(function(){
 	Route::post('details', 'API\AuthController@get_user_details_info'); 
 	Route::post('schedule/edit', 'API\ScheduleController@edit')->name('edit schudele')->middleware('permission:edit schudele');
+	Route::post('schedule/show', 'API\ScheduleController@show')->name('show schudele')->middleware('permission:show schudele');
+	Route::get('notes', 'API\MatterController@notes')->name('save notes')->middleware('permission:save notes');
+
 });
+

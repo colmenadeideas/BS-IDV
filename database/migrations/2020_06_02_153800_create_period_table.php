@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateScheduleTable extends Migration
+class CreatePeriodTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,12 @@ class CreateScheduleTable extends Migration
      */
     public function up()
     {
-        Schema::create('schedule', function (Blueprint $table) {
+        Schema::create('period', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name',200);
-            $table->text('json_data');
+            $table->enum('status',['active','inactive']);
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->string('code',20);
         });
     }
 
@@ -27,6 +29,6 @@ class CreateScheduleTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('schedule');
+        Schema::dropIfExists('period');
     }
 }

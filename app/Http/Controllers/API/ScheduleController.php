@@ -43,5 +43,9 @@ class ScheduleController extends Controller
     {
         return "puedes delete";
     }
+    public function show()
+    {
+        return "puedes ver";
+    }
     
 }
