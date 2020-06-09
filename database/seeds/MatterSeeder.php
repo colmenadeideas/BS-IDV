@@ -1,38 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\API;
+use Illuminate\Database\Seeder;
 
-
-
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller; 
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth; 
-use Symfony\Component\HttpFoundation\Response;
-
-
-
-
-class MatterController extends Controller
+class MatterSeeder extends Seeder
 {
     /**
-     * Display a listing of the resource.
+     * Run the database seeds.
      *
-     * @return \Illuminate\Http\Response
+     * @return void
      */
-    public function index()
+    public function run()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
+        //Primer semestre
            //Primer semestre
         $matters["Basico"]["Taller I"] =  array( 'description' => 'Año Básico','semester' =>1, 'h_theory' =>1, 'h_practice' =>1 );
         $matters["Basico"]["Editor Vectorial"] =  array( 'description' => 'Año Básico','semester' =>1, 'h_theory' =>1, 'h_practice' =>1 );
@@ -87,7 +66,7 @@ class MatterController extends Controller
         $matters["Diseño de Modas"]["Diseño de Modas"] =  array( 'description' => '5to semenestre','semester' =>5, 'h_theory' =>1, 'h_practice' =>1 );
         $matters["Diseño de Modas"]["Portafolio"] =  array( 'description' => '5to semenestre','semester' =>5, 'h_theory' =>1, 'h_practice' =>1 );
         $matters["Diseño de Modas"]["Propiedad Intelectual"] =  array( 'description' => '5to semenestre','semester' =>5, 'h_theory' =>1, 'h_practice' =>1 );
-        $matters["Diseño de Modas"]["Orfebrería II"] =  array( 'descriptionS' => '5to semenestre','semester' =>5, 'h_theory' =>1, 'h_practice' =>1 );
+        $matters["Diseño de Modas"]["Orfebrería II"] =  array( 'description' => '5to semenestre','semester' =>5, 'h_theory' =>1, 'h_practice' =>1 );
         
         $idPensum = DB::table('pensum')->insertGetId(
                 [
@@ -95,6 +74,7 @@ class MatterController extends Controller
                     'end_date' => now(), 
                     'status'  =>'active', 
                     'caree' => 'Diseño de modas', 
+                    'matters' => 'Todas las materias',
                     'description' => 'pensum activo'
                 ]);
 
@@ -120,46 +100,11 @@ class MatterController extends Controller
 
                 }
        }
-       
+
 
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
-
-    public function notes(Request $request)
-    {
-        
-    }
+    
 }
+

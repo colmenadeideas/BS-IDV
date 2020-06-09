@@ -16,6 +16,7 @@ class CreateMatterTable extends Migration
         Schema::create('matter', function (Blueprint $table) {
            
             $table->bigIncrements('id');
+            $table->string('name',50);
             $table->string('description',250);
             $table->integer('semester')->unsigned();;
             $table->integer('h_theory')->unsigned();;
