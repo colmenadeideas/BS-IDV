@@ -23,7 +23,11 @@ Route::post('register', 'API\AuthController@register');
 Route::post('registerpp', 'API\AuthController@registerpp');
 Route::get('matter', 'API\MatterController@store');
 
-Route::middleware('auth:api','cors')->group(function(){
+Route::get('/clear-cache', function() {
+    Artisan::call('cache:clear');
+    return "Cache is cleared";
+});
+Route::middleware('auth:api')->group(function(){
 	Route::post('details', 'API\AuthController@get_user_details_info'); 
 	Route::post('schedule/edit', 'API\ScheduleController@edit')->name('edit schudele')->middleware('permission:edit schudele');
 	Route::post('schedule/show', 'API\ScheduleController@show')->name('show schudele')->middleware('permission:show schudele');
