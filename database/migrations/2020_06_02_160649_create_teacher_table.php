@@ -14,10 +14,11 @@ class CreateTeacherTable extends Migration
     public function up()
     {
         Schema::create('teacher', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->unsignedBigInteger('id_user');
             $table->string('curriculum',100);
             $table->date('start_date');
-            $table->date('end_date');
+            $table->date('end_date')->nullable();
 
             $table->foreign('id_user')
                 ->references('id')

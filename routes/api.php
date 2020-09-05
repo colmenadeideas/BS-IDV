@@ -20,13 +20,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('login', 'API\AuthController@login');
 Route::post('register', 'API\AuthController@register');
-Route::post('registerpp', 'API\AuthController@registerpp');
-Route::get('matter', 'API\MatterController@store');
+Route::post('IniciarPeriodo', 'API\RegistrationController@nuevoPeriodo');
+Route::post('NuevoEstudiante', 'API\RegistrationController@nuevoEstudiante');
+Route::post('EstudiantesInscritos', 'API\PaymentsController@verEstudiantesInscritos');
+Route::post('PagosPorAprobar', 'API\PaymentsController@verPagosPorAprobar');
+Route::post('PagoEstudiante', 'API\PaymentsController@registrarPagoEstudiante');
+Route::get('prueba', 'API\RegistrationController@prueba');
 
-Route::get('/clear-cache', function() {
-    Artisan::call('cache:clear');
-    return "Cache is cleared";
-});
+
 Route::middleware('auth:api')->group(function(){
 	Route::post('details', 'API\AuthController@get_user_details_info'); 
 	Route::post('schedule/edit', 'API\ScheduleController@edit')->name('edit schudele')->middleware('permission:edit schudele');
@@ -35,3 +36,9 @@ Route::middleware('auth:api')->group(function(){
 
 });
 
+
+
+Route::get('/clear-cache', function() {
+    Artisan::call('cache:clear');
+    return "Cache is cleared";
+});

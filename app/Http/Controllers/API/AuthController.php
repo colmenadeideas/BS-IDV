@@ -32,7 +32,7 @@ class AuthController extends Controller
       
       $token['role'] = $user->getRoleNames();
       $token['token'] = $this->get_user_token($user,"TestToken");
-      
+      $token['name'] =  $user->name;
       $response = self::HTTP_OK;
       
 
@@ -57,7 +57,8 @@ class AuthController extends Controller
       'email' => 'required|email', 
       'password' => 'required', 
       'password_confirmation' => 'required|same:password', 
-      'role' => 'required', 
+      //'role' => 'required',  // por ahora 
+
 
     ]);
 
@@ -68,18 +69,14 @@ class AuthController extends Controller
     }
 
     $data = $request->all(); 
-
+    $dat['role'] = 'student'; //remove
     $data['password'] = Hash::make($data['password']);
     $role = $data['role'];
     $user = User::create($data); 
-
     $user->assignRole($role);
-
     $success['token'] = $this->get_user_token($user,"TestToken");
-
     $success['name'] =  $user->name;
     $success['role'] = $user->getRoleNames();
-
     $response =  self::HTTP_CREATED;
 
     return $this->get_http_response( "success", $success, $response );

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePersonTable extends Migration
+class CreateSubjectMatterTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,18 +13,14 @@ class CreatePersonTable extends Migration
      */
     public function up()
     {
-        Schema::create('person', function (Blueprint $table) {
+        Schema::create('subject_matter', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('id_user');
             $table->string('name',50);
-            $table->date('birthday');
-            $table->string('address',75);
-
-            $table->foreign('id_user')
-                ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
-
+            $table->string('code',10);
+            $table->string('description',250);
+            $table->integer('semester')->unsigned();
+            $table->integer('h_theory')->unsigned();
+            $table->integer('h_practice')->unsigned();
         });
     }
 
@@ -35,6 +31,6 @@ class CreatePersonTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('person');
+        Schema::dropIfExists('subject_matter');
     }
 }

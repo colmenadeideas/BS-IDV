@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateStudentTable extends Migration
+class CreateCareerTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,19 +13,13 @@ class CreateStudentTable extends Migration
      */
     public function up()
     {
-        Schema::create('student', function (Blueprint $table) {
+        Schema::create('career', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('id_user');
-            $table->string('curriculum',100);
             $table->date('start_date');
             $table->date('end_date')->nullable();
-
-            $table->foreign('id_user')
-                ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
-
-            
+            $table->enum('status',['active','inactive']);
+            $table->string('name',100);
+            $table->string('description',250);
         });
     }
 
@@ -36,6 +30,6 @@ class CreateStudentTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('student');
+        Schema::dropIfExists('career');
     }
 }

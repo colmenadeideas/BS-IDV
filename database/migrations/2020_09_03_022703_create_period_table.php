@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateStudentTable extends Migration
+class CreatePeriodTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,18 +13,12 @@ class CreateStudentTable extends Migration
      */
     public function up()
     {
-        Schema::create('student', function (Blueprint $table) {
+        Schema::create('period', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('id_user');
-            $table->string('curriculum',100);
+            $table->string('code',10);
             $table->date('start_date');
             $table->date('end_date')->nullable();
-
-            $table->foreign('id_user')
-                ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
-
+            $table->enum('status',['active','inactive']);
             
         });
     }
@@ -36,6 +30,6 @@ class CreateStudentTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('student');
+        Schema::dropIfExists('period');
     }
 }
