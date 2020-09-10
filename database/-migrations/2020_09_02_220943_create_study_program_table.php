@@ -15,7 +15,6 @@ class CreateStudyProgramTable extends Migration
     {
         Schema::create('study_program', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->timestamps();
             $table->date('start_date');
             $table->date('end_date')->nullable();
         });

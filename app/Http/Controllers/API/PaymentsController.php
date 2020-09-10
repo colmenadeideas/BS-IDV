@@ -59,12 +59,14 @@ class PaymentsController extends Controller
 	  	
 	}
 	
-	public function verEstudiantesInscritos(){
-		$period  = DB::table('period')->where('status', 'active')->value('id');
+	public function verEstudiantesInscritos($period = NULL){
+		if (empty($period)) {
+			$period  = DB::table('period')->where('status', 'active')->value('id');
+		}
    		$results = DB::select("SELECT u.`name`,u.`email`,u.`id`,i.`id_student`,i.`id_period`,i.`status` FROM `inscription` as i, `student` as s, `users` as u WHERE s.`id_user` = u.`id` AND i.`id_student` = s.`id` AND i.`id_period` = ?", [$period]);
    		return response()->json(['status' => "success", "data" => $results]);
 	}
-	public function aprobarPago(){
+	public function gestionarPago(){
 		
 	}
 }

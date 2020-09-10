@@ -19,7 +19,8 @@ class CreateTeacherTable extends Migration
             $table->string('curriculum',100);
             $table->date('start_date');
             $table->date('end_date')->nullable();
-
+            $table->enum('status',['active','inactive'])->default('active');
+            
             $table->foreign('id_user')
                 ->references('id')
                 ->on('users')

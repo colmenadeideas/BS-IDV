@@ -16,8 +16,14 @@ class CreateLessonTable extends Migration
         Schema::create('lesson', function (Blueprint $table) {
             $table->id();
             $table->date('date');
+            $table->unsignedBigInteger('id_lesson_teacher_matter');
             $table->enum('type',['online','face-to-face']);
             $table->longText('content');
+
+            $table->foreign('id_lesson_teacher_matter')
+                    ->references('id')
+                    ->on('lesson_teacher_matter')
+                    ->onDelete('cascade');
         });
     }
 

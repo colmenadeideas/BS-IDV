@@ -18,7 +18,7 @@ class RegistrationController extends Controller
   CONST HTTP_CREATED = Response::HTTP_CREATED;
   CONST HTTP_UNAUTHORIZED = Response::HTTP_UNAUTHORIZED;
   public function prueba(){
-    echo "string"; 
+    echo "eliminado"; 
    
    
   }

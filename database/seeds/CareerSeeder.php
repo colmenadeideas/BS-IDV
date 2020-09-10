@@ -11,7 +11,7 @@ class CareerSeeder extends Seeder
      */
     public function run()
     {
-        $carrera =     ["Diseño Grafico", "Diseño de Modas", "Ilustración","Diseño Industrial", "Diseño de interiores"];
+        $carrera = ["Diseño Grafico", "Diseño de Modas", "Ilustración","Diseño Industrial", "Diseño de interiores"];
         
          foreach ($carrera as $key ) {
          	$idC=DB::table('career')->insertGetId(

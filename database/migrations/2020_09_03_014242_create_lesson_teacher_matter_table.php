@@ -15,25 +15,20 @@ class CreateLessonTeacherMatterTable extends Migration
     {
         Schema::create('lesson_teacher_matter', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('id_lesson');
             $table->unsignedBigInteger('id_subject_matter');
-            $table->unsignedBigInteger('id_study_program');
+            $table->unsignedBigInteger('id_period');
             $table->unsignedBigInteger('id_teacher');
-            $table->unsignedBigInteger('id_student');
+            //$table->unsignedBigInteger('id_student');
 
-            $table->foreign('id_lesson')
-                    ->references('id')
-                    ->on('lesson')
-                    ->onDelete('cascade');
 
             $table->foreign('id_subject_matter')
                     ->references('id')
                     ->on('subject_matter')
                     ->onDelete('cascade');
 
-            $table->foreign('id_study_program')
+            $table->foreign('id_period')
                     ->references('id')
-                    ->on('study_program')
+                    ->on('period')
                     ->onDelete('cascade');
 
             $table->foreign('id_teacher')
@@ -41,10 +36,10 @@ class CreateLessonTeacherMatterTable extends Migration
                     ->on('teacher')
                     ->onDelete('cascade');
 
-            $table->foreign('id_student')
+            /*$table->foreign('id_student')
                     ->references('id')
                     ->on('student')
-                    ->onDelete('cascade');
+                    ->onDelete('cascade');*/
                     
         });
     }

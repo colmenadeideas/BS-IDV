@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth; 
 use Symfony\Component\HttpFoundation\Response;
 use Spatie\Permission\Models\Role;
+use DB;
 
 class AuthController extends Controller 
 {
@@ -33,6 +34,7 @@ class AuthController extends Controller
       $token['role'] = $user->getRoleNames();
       $token['token'] = $this->get_user_token($user,"TestToken");
       $token['name'] =  $user->name;
+      $token['period'] =  DB::table('period')->where('status', 'active')->value('id');
       $response = self::HTTP_OK;
       
 
