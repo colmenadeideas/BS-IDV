@@ -13,40 +13,63 @@ use DB;
 
 class AuthController extends Controller 
 {
-  
+  //php artisan passport:install
+  //composer dumpautoload
+  //php artisan queue:restart
   CONST HTTP_OK = Response::HTTP_OK;
   CONST HTTP_CREATED = Response::HTTP_CREATED;
   CONST HTTP_UNAUTHORIZED = Response::HTTP_UNAUTHORIZED;
-
+    
+      
   public function login(Request $request){ 
 
     $credentials = [
 
-        'email' => $request->email, 
+        'email' => $request->username, 
         'password' => $request->password
 
     ];
-
+    
     if( auth()->attempt($credentials) ){ 
 
       $user = Auth::user(); 
       
       $token['role'] = $user->getRoleNames();
-      $token['token'] = $this->get_user_token($user,"TestToken");
-      $token['name'] =  $user->name;
-      $token['period'] =  DB::table('period')->where('status', 'active')->value('id');
+      $usuario = DB::select("SELECT * FROM `perfil` as p  WHERE p.`id_user` = ? ",[$user->id]);
+      $token['name'] =  $usuario[0]->{'nombre'}." ".$usuario[0]->{'apellido'};
+      $token['period'] =  DB::table('periodo')->where('status', 'activo')->value('id');
       $response = self::HTTP_OK;
       
-
+      $data['data'] = $token; 
+      $data['status'] = $response; 
+      $idMatter = DB::table('log_conexiones')->insertGetId(
+                    [
+                        'email' => $request->username, 
+                        'data'  =>json_encode($data)
+                    ]); 
+      
+      $token['token'] = $this->get_user_token($user,"TestToken");
+      
+      
+      
       return $this->get_http_response( "success", $token, $response );
 
     } else { 
 
-      $error = "Unauthorized Access";
+      $error = "Usuario o clave invalido o error en los datos";
 
-      $response = self::HTTP_UNAUTHORIZED;
-
-      return $this->get_http_response( "Error", $error, $response );
+      $response = self::HTTP_OK;
+    
+      $data['data'] = $error; 
+      $data['status'] = $response; 
+      //$data['navegador'] = get_browser(null, true);
+      
+      $idMatter = DB::table('log_conexiones')->insertGetId(
+                    [
+                        'email' => $request->username, 
+                        'data'  =>json_encode($data)
+                    ]);         
+      return $this->get_http_response( "error", $error, $response );
     } 
 
   }

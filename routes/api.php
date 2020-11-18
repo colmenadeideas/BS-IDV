@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -14,12 +15,63 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
+/*Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
-});
-//Inscripciones
+});*/
+
+
+
 Route::post('login', 'API\AuthController@login');
-Route::post('add/Periodo', 'API\RegistrationController@nuevoPeriodo');
+Route::post('programa','API\ProgramaController@store');
+Route::get('programa/{materia?}','API\ProgramaController@show');
+
+Route::get('perfil/{id}','API\PerfilController@show');
+
+//Periodo
+
+Route::post('periodo','API\PeriodoController@store');
+Route::put('periodo/{codigo}','API\PeriodoController@update');
+Route::delete('periodo/{codigo}','API\PeriodoController@destroy');
+Route::get('periodo/{id}','API\PeriodoController@show');//Periodo
+
+//Materia
+Route::post('materias','API\MateriasController@store');
+Route::put('materias/{codigo}','API\MateriasController@update');
+Route::delete('materias/{codigo}','API\MateriasController@destroy');
+Route::get('materias/','API\MateriasController@show');
+Route::get('materia/{id}','API\MateriasController@show');
+Route::get('materia/{id}/','API\MateriasController@show');
+Route::get('materia/{id?}/clases','API\ClasesController@show');
+
+//Estudiantes
+
+Route::post('estudiante/{tipo?}','API\EstudiantesController@store');
+Route::put('estudiante/{id}','API\EstudiantesController@update');
+Route::delete('estudiante/{id}','API\EstudiantesController@destroy');
+Route::get('estudiantes/{id?}/{contenido?}/{periodo?}','API\EstudiantesController@show');
+Route::get('estudiante/{id}','API\EstudiantesController@show');
+
+//clases
+Route::post('clase/{tipo?}','API\ClasesController@store');
+Route::put('clases/{id?}','API\ClasesController@update');
+Route::delete('clases/{id}','API\ClasesController@destroy');
+Route::get('clases/{id?}','API\ClasesController@show');
+
+//Profesores
+Route::post('profesor/{tipo?}','API\ProfesoresController@store');
+Route::put('profesor/{id}/{tipo?}','API\ProfesoresController@update');
+Route::put('profesor/{codigo}','API\ProfesoresController@update');
+Route::delete('profesor/{codigo}','API\ProfesoresController@destroy');
+Route::get('profesor/{id?}','API\ProfesoresController@show');
+Route::get('show','API\ProfesoresController@run');
+Route::get('profesores','API\ProfesoresController@show');
+Route::get('credenciales','API\ProfesoresController@emails');
+
+
+//aux 
+Route::get('cslug','API\ClasesController@cslug');
+
+/*Route::post('add/Periodo', 'API\RegistrationController@nuevoPeriodo');
 Route::post('add/Estudiante', 'API\RegistrationController@nuevoEstudiante');
 
 //PAGOS
@@ -54,7 +106,12 @@ Route::get('create/Progama','API\StudyProgramController@create');
 	Route::post('GestionarPago', 'API\PaymentsController@gestionarPago')->name('gestionarPago Payments')->middleware('permission:gestionarPago Payments');
 });
 */
-Route::get('/clear-cache', function() {
-    Artisan::call('cache:clear');
-    return "Cache is cleared";
-});
+ 
+// Clear application cache:
+ Route::get('/clear-cache', function() {
+    $exitCode = Artisan::call('cache:clear');
+    $exitCode = Artisan::call('route:cache');
+    $exitCode = Artisan::call('config:cache');
+    $exitCode = Artisan::call('view:clear');
+     return 'Application cache cleared';
+ });

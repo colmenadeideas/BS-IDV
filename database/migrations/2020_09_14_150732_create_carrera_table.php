@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateCarreraTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('carrera', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->date('fecha_inicio');
+            $table->date('fecha_fin')->nullable();
+            $table->enum('status',['activo','inactivo']);
+            $table->string('nombre',100);
+            $table->string('descripcion',250);
+        });
+    }
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('carrera');
+    }
+}

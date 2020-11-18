@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Seeder;
 
-class CareerSeeder extends Seeder
+class CarrerasSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -14,7 +14,7 @@ class CareerSeeder extends Seeder
         $carrera = ["Año Basico","Diseño Grafico", "Diseño de Modas", "Ilustración","Diseño Industrial", "Diseño de interiores"];
         
          foreach ($carrera as $key ) {
-         	$idC=DB::table('career')->insertGetId(
+         	$idC=DB::table('carrera')->insertGetId(
                 ['fecha_inicio' => now(), 
                  'fecha_fin' => now(), 
                  'status' => 'activo',
@@ -23,7 +23,7 @@ class CareerSeeder extends Seeder
          	
          	for ($i=1; $i <=6 ; $i++) {
          		$amount = floatval(120.2*$i);
-         		DB::table('cost')->insert([
+         		DB::table('costo')->insert([
          		'monto' => $amount,
          		'semestre'  => $i,
          		'id_carrera' => $idC]);
