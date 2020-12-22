@@ -16,7 +16,7 @@ class CreateEnsenarTable extends Migration
         Schema::create('ensenar', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('id_inscripcion');
-            $table->unsignedBigInteger('id_grupo');
+            
             $table->unsignedBigInteger('id_evaluacion');
             $table->unsignedBigInteger('id_profesor');
             $table->unsignedBigInteger('id_clase');
@@ -31,10 +31,7 @@ class CreateEnsenarTable extends Migration
                     ->on('profesor')
                     ->onDelete('cascade');
 
-            $table->foreign('id_grupo')
-                    ->references('id')
-                    ->on('grupo')
-                    ->onDelete('cascade');
+            
 
             $table->foreign('id_evaluacion')
                     ->references('id')

@@ -17,6 +17,7 @@ class CreateInscripcionTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('id_estudiante');
             $table->unsignedBigInteger('id_periodo');
+            $table->unsignedBigInteger('id_grupo');
             $table->unsignedBigInteger('id_pagos')->nullable();
             $table->enum('status',['completada','cancelada','pendiente','iniciada']);
             $table->integer('semestre');
@@ -35,6 +36,11 @@ class CreateInscripcionTable extends Migration
              $table->foreign('id_pagos')
                     ->references('id')
                     ->on('pagos')
+                    ->onDelete('cascade');
+
+            $table->foreign('id_grupo')
+                    ->references('id')
+                    ->on('grupo')
                     ->onDelete('cascade');
         });
     }

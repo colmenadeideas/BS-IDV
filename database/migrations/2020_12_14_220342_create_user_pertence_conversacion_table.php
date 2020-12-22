@@ -4,29 +4,29 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePersonaTable extends Migration
+class CreateUserPertenceConversacionTable extends Migration
 {
     /**
      * Run the migrations.
      *
      * @return void
      */
-   public function up()
+    public function up()
     {
-        Schema::create('perfil', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::create('user_pertence_conversacion', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('id_user');
-            $table->string('nombre',50);
-            $table->string('apellido',50);
-            $table->date('fecha_nacimiento');
-            $table->string('direccion',75);
-            $table->text('imagen');
+            $table->unsignedBigInteger('id_conversacion');
+            $table->timestamps();
 
             $table->foreign('id_user')
                 ->references('id')
-                ->on('users')
+                ->on('users');
+            
+            $table->foreign('id_conversacion')
+                ->references('id')
+                ->on('conversacion')
                 ->onDelete('cascade');
-
         });
     }
 
@@ -37,6 +37,6 @@ class CreatePersonaTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('perfil');
+        Schema::dropIfExists('user_pertence_conversacion');
     }
 }

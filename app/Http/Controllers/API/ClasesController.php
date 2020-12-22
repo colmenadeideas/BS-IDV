@@ -40,7 +40,7 @@ class ClasesController extends Controller
                      'aula' => 'required',
                      'fecha' => 'required|date',
                      'turno' => 'required',
-                     'aula' => 'required'
+                     
                     ]);
                 break;
             
@@ -51,7 +51,8 @@ class ClasesController extends Controller
 
         if ($validator->fails()) 
         { 
-            return response()->json([ 'status' =>'error', 'results' => $validator->errors() ]);
+            //return response()->json([ 'status' =>'error', 'results' => $validator->errors() ]);
+            return self::respuestaError(400, $validator->errors());  
         }
         $data = $request->all();
         
@@ -105,6 +106,11 @@ class ClasesController extends Controller
                # code...
                break;
         }
+        if ($clase) {
+            return response()->json(['status' => "success"]);
+        }
+        //return response()->json(['status' => "error", 'data' => "clase no agregada"]);
+        return self::respuestaError(400, "La clase no pudo ser agregada");
 
 
     }
@@ -115,30 +121,44 @@ class ClasesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($codigoMat = NULL)
+    public function show($codigoMat = NULL, $clase = NULL)
     {
         $periodo = DB::table('periodo')->where('status', 'activo')->value('id'); 
-        if (!empty($codigoMat)) {
-           
-            //$materia =  DB::select("SELECT `m`.`id`, `m`.`nombre`,`c`.`nombre` as `especialidad`, `dias` as `horario` FROM `carrera_tiene_materia` as `ctn` ,`carrera` as `c`, `materia` as `m`, `clase_profesor_materia` as `cpm`, `programa` as `p` WHERE `ctn`.`id_carrera` = `c`.`id` AND `m`.`status` = 'activo' AND `ctn`.`id_materia` = `m`.`id` AND `m`.`id` = `cpm`.`id_materia` AND `cpm`.`id_programa` =`p`.`id` AND  `m`.`id` = ?", [$codigoMat]);
+        if (empty($clase)) {
+            $data['results'] = DB::select("SELECT DISTINCT `c`.`id`, `c`.`nombre`,m.`nombre` as `materia`,`tipo`,`clase_creada` as `creation_date`,`fecha`,`contenido`,imagen,evaluada FROM `clase_profesor_materia` as cpm, `clase` as c, `aula` as a, `programa` as p,`materia` as `m` WHERE c.`id` = ? AND cpm.`id_materia` = m.`id` AND p.`id_materia`= cpm.`id_materia` AND cpm.`id` = c.`id_clase_profesor_materia` AND p.`id_periodo` = ?", [$codigoMat,$periodo]);   
             
-            $results = DB::select("SELECT `c`.`id`, `c`.`nombre`,`clase_creada` as `creation_date`,imagen,evaluada FROM `clase_profesor_materia` as cpm, `clase` as c, `aula` as a, `programa` as p,`materia` as `m` WHERE m.`id` = ? AND cpm.`id_materia` = m.`id` AND p.`id_materia`= cpm.`id_materia` AND cpm.`id` = c.`id_clase_profesor_materia` AND p.`id_periodo` = ?", [$codigoMat,$periodo]);   
-            
-            $data = json_decode(json_encode($results),true);
-            //$data['materia'] =json_encode($materia) ;
-            if (empty($results)) {
-                 return response()->json([ 'status' => "error", 'results' => "La materia no tiene clases cargadas"]); 
+            if (empty( $data['results'])) {
+                 //return response()->json([ 'status' => "error", 'results' => "La clase no fue cargada"]); 
+                 return self::respuestaError(204, "No hay clases cargada");
             }
-           return response()->json([ 'status' => "success", 'results' =>$data]);
+           
+            return response()->json([ 'status' => "success", 'data' =>$data]);
+        }
+
+        
+        if (!empty($codigoMat)) {
+                     
+            $data['results'] = DB::select("SELECT DISTINCT `c`.`id`, `c`.`nombre`,`clase_creada` as `creation_date`,imagen,evaluada FROM `clase_profesor_materia` as cpm, `clase` as c, `aula` as a, `programa` as p,`materia` as `m` WHERE m.`id` = ? AND cpm.`id_materia` = m.`id` AND p.`id_materia`= cpm.`id_materia` AND cpm.`id` = c.`id_clase_profesor_materia` AND p.`id_periodo` = ?", [$codigoMat,$periodo]);   
+            
+          
+            if (empty( $data['results'])) {
+                return self::respuestaError(204, "La materia no tiene clases cargadas");
+                //return response()->json([ 'status' => "error", 'results' => "La materia no tiene clases cargadas"]); 
+            }
+           return response()->json([ 'status' => "success", 'data' =>$data]);
        }
        else
        {
-            $results['materias'] = DB::select("SELECT c.`id` as `id_clase`,`clase_creada`,`fecha`,`tipo`,`contenido`, `Nombre` as `nombre del aula`, `codigo`, `ubicacion` FROM `clase_profesor_materia` as cpm, `clase` as c, `aula` as a, `programa` as p WHERE cpm.`id` = c.`id_clase_profesor_materia` AND p.`id_periodo` = ?", [$codigoMat,$periodo]); 
+            $results['materias'] = DB::select("SELECT DISTINCT c.`id` as `id_clase`,`clase_creada`,`fecha`,`tipo`,`contenido`, `Nombre` as `nombre del aula`, `codigo`, `ubicacion` FROM `clase_profesor_materia` as cpm, `clase` as c, `aula` as a, `programa` as p WHERE cpm.`id` = c.`id_clase_profesor_materia` AND p.`id_periodo` = ?", [$codigoMat,$periodo]); 
             if (empty($results)) {
-                 return response()->json([ 'status' => "error", 'results' => "No hay clases cargadas" ]); 
+                 return self::respuestaError(204, "No hay clases cargada");
+                 //return response()->json([ 'status' => "error", 'results' => "No hay clases cargadas" ]); 
             }
            return response()->json([ 'status' => "success", 'results'=>$data]);
        }
+
+
+
     }
 
     /**
@@ -150,18 +170,7 @@ class ClasesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [ 
-                     'clase_creada'=> 'date',  
-                     'fecha'=> 'date',    
-                     'id_aula'=> 'numeric',  
-                     'tipo'=> 'string' 
-                    ]);
-        if ($validator->fails()) 
-        { 
-            return response()->json([ 'error'=> $validator->errors() ]);
-        }
 
-       
     }
 
     /**

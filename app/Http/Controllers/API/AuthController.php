@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth; 
 use Symfony\Component\HttpFoundation\Response;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
 use DB;
 
 class AuthController extends Controller 
@@ -21,7 +22,7 @@ class AuthController extends Controller
   CONST HTTP_UNAUTHORIZED = Response::HTTP_UNAUTHORIZED;
     
       
-  public function login(Request $request){ 
+    public function login(Request $request){ 
 
     $credentials = [
 
@@ -34,9 +35,10 @@ class AuthController extends Controller
 
       $user = Auth::user(); 
       
-      $token['role'] = $user->getRoleNames();
+      $token['role'] = $user->getRoleNames()[0];
       $usuario = DB::select("SELECT * FROM `perfil` as p  WHERE p.`id_user` = ? ",[$user->id]);
-      $token['name'] =  $usuario[0]->{'nombre'}." ".$usuario[0]->{'apellido'};
+      //$token['name'] =  $usuario[0]->{'nombre'}." ".$usuario[0]->{'apellido'};
+      $token['id'] =  $user->id;
       $token['period'] =  DB::table('periodo')->where('status', 'activo')->value('id');
       $response = self::HTTP_OK;
       
@@ -51,8 +53,8 @@ class AuthController extends Controller
       $token['token'] = $this->get_user_token($user,"TestToken");
       
       
-      
-      return $this->get_http_response( "success", $token, $response );
+      $datos['results'] = $token;
+      return $this->get_http_response( "success", $datos, $response );
 
     } else { 
 
@@ -68,13 +70,55 @@ class AuthController extends Controller
                     [
                         'email' => $request->username, 
                         'data'  =>json_encode($data)
-                    ]);         
+                    ]); 
+              
       return $this->get_http_response( "error", $error, $response );
     } 
 
   }
+    public function requestUpdatePassword($id)
+    {
+      $user = User::find($id);
+      $seguridad['remember_token'] =  Str::random(10);
+      $update = $user->update($seguridad);
+      //armar el email
+      //enviarlo
+  }
+    public function UpdatePassword(Request $request, $id,$token)
+    {
+      $user = User::find($id);
+      $rt   = $user->remember_token;
+      if ($rt === $token ) //tambien hay que comparar tiempo
+      {
+          $input = $request->all();
+          $validator = Validator::make($input, [
+              'password' => 'required', 
+              'password_confirmation' => 'required|same:password'
+          ]);
+
+          if ($validator->fails()) { 
+            return response()->json([ 'error'=> $validator->errors() ]);
+          }
+          $seguridad['password'] =  Hash::make($input['password']);
+          $seguridad['remember_token'] =  Str::random(10);
+          $update = $user->update($seguridad);
+      }
+      
+  }
+    public function get_user_token( $user, string $token_name = null ) {
+
+     return $user->createToken($token_name)->accessToken; 
+
+   }
+    public function get_http_response( string $status = null, $data = null, $response ){
+        return response()->json([
     
-  public function register(Request $request) 
+            'status' => $status, 
+            'data' => $data,
+    
+        ], $response);
+    }
+  /*public function register(Request $request) 
   { 
     $validator = Validator::make($request->all(), [ 
 
@@ -107,7 +151,7 @@ class AuthController extends Controller
     return $this->get_http_response( "success", $success, $response );
 
   }
-  
+
  
   public function update(Request $request, $id)
   {
@@ -147,20 +191,8 @@ class AuthController extends Controller
 
   } 
 
-  public function get_http_response( string $status = null, $data = null, $response ){
+}
 
-    return response()->json([
 
-        'status' => $status, 
-        'data' => $data,
-
-    ], $response);
-  }
-
-  public function get_user_token( $user, string $token_name = null ) {
-
-     return $user->createToken($token_name)->accessToken; 
-
-  }
-
+  */
 }

@@ -56,21 +56,21 @@ class ProgramaController extends Controller
     public function show($id = NULL)
     {
         if(empty($id)){
-            $period =  DB::table('periodo')->where('status', 'activo')->value('id');
+            $periodo =  DB::table('periodo')->where('status', 'activo')->value('id');
            
-            if(empty($period)){
+            if(empty($periodo)){
                 return response()->json([ 'error'=> "No se ha iniciado un semestre" ]); 
             }
-            $results = DB::select("SELECT * FROM `programa` WHERE `id_periodo` = ?",[$periodo]);
-            if (empty($results)) {
+            $results['results'] = DB::select("SELECT `id`, `id_materia`, `id_periodo` FROM `programa` WHERE `id_periodo` = ?",[$periodo]);
+            if (empty($results['results'])) {
                 return response()->json([ 'error'=> "No hay programas actualmente" ]); 
             }
             return response()->json(['status' => "success", 'data' => $results]);
         }  
 
-        $results = DB::select("SELECT * FROM `progrma` WHERE `id_materia` = ?",[$id]);
-        if (empty($results)) {
-            return response()->json([ 'error'=> "No hay programas actualmente" ]); 
+        $results['results'] = DB::select("SELECT `id`, `id_materia`, `id_periodo` FROM `programa` WHERE `id_materia` = ?",[$id]);
+        if (empty($results['results'])) {
+            return response()->json([ 'status' => "error", 'data' => "No hay programas actualmente" ]); 
         }
             return response()->json(['status' => "success", 'data' => $results]);
     }

@@ -45,38 +45,44 @@ class PerfilController extends Controller
     {
         
         $user = User::find($id);
-        $tipo = $user->getRoleNames();
-        $periodo  = DB::table('periodo')->where('status', 'activo')->value('id');
-        switch ($tipo[0]) {
-            case 'estudiante':
-                    $data['perfil'] = DB::select("SELECT * FROM `perfil` as p, `estudiante` as o WHERE p.`id_user` = o.`id_user` AND p.`id_user` = ?", [$id]);
-                    $id_estudiante = DB::table('estudiante')->where('id_user', $id)->value('id');
-                    $c = DB::select("SELECT `nombre`, i.`status` as `status` FROM `inscripcion` as i, `pagar_coutas` as pc, `carrera` as c WHERE i.`id_pagos` = pc.`id_pagos` AND c.`id` = pc.`id_carrera` AND i.`id_periodo` = ? AND i.`id_estudiante` = ?",[$periodo,$id_estudiante]);
-                    if (empty($c)) {
-                        $c = DB::select("SELECT `nombre`, i.`status` as `status` FROM `inscripcion` as i, `pagar_coutas` as pc, `carrera` as c WHERE i.`id_pagos` = pc.`id_pagos` AND c.`id` = pc.`id_carrera` AND i.`id_estudiante` = ? ORDER BY i.`id` DESC", [$id_estudiante]);
-                    }
-                         $data['carrera'] =  $c[0]->{'nombre'};             
-                         $data['status pago'] =  $c[0]->{'status'};                         
-                break;
-            case 'profesor':
-                    $data['perfil'] = DB::select("SELECT * FROM `perfil` as p, `profesor` as o WHERE p.`id_user` = o.`id_user` AND p.`id_user` = ?", [$id]);
-                    
-                    $id_profesor = DB::table('profesor')->where('id_user', $id)->value('id');
+        if($user){
+            $tipo = $user->getRoleNames();
+            $periodo  = DB::table('periodo')->where('status', 'activo')->value('id');
+            switch ($tipo[0]) {
+                case 'estudiante':
+                        $data['results'] = DB::select("SELECT * FROM `perfil` as p, `estudiante` as o WHERE p.`id_user` = o.`id_user` AND p.`id_user` = ?", [$id]);
+                        $id_estudiante = DB::table('estudiante')->where('id_user', $id)->value('id');
+                        $c = DB::select("SELECT `nombre`, i.`status` as `status` FROM `inscripcion` as i, `pagar_coutas` as pc, `carrera` as c WHERE i.`id_pagos` = pc.`id_pagos` AND c.`id` = pc.`id_carrera` AND i.`id_periodo` = ? AND i.`id_estudiante` = ?",[$periodo,$id_estudiante]);
+                        if (empty($c)) {
+                            $c = DB::select("SELECT `nombre`, i.`status` as `status` FROM `inscripcion` as i, `pagar_coutas` as pc, `carrera` as c WHERE i.`id_pagos` = pc.`id_pagos` AND c.`id` = pc.`id_carrera` AND i.`id_estudiante` = ? ORDER BY i.`id` DESC", [$id_estudiante]);
+                        }
+                             $data['carrera'] =  $c[0]->{'nombre'};             
+                             $data['status pago'] =  $c[0]->{'status'};                         
+                    break;
+                case 'profesor':
+                        $data['results'] = DB::select("SELECT * FROM `perfil` as p, `profesor` as o WHERE p.`id_user` = o.`id_user` AND p.`id_user` = ?", [$id]);
+                        
+                        $id_profesor = DB::table('profesor')->where('id_user', $id)->value('id');
 
-                    $data['materias'] = DB::select("SELECT m.`nombre`, `semestre`, `turno`,car.`nombre` as `materia` FROM  `carrera_tiene_materia` as ctm, `carrera` as car ,`materia` as m,  `clase_profesor_materia` as cm, `programa` as p WHERE m.`id` =  cm.`id_materia` AND cm.`id_profesor` = ? AND p.`id_periodo` = ? AND p.`id_materia` = m.`id` AND ctm.`id_carrera` = car.`id` AND ctm.`id_materia` = cm.`id_materia`", [$id_profesor, $periodo]);
-                    if (empty($data['materias'])) {
-                        $data['materias'] = DB::select("SELECT m.`nombre`, `semestre`, `turno`,car.`nombre` as `materia`, p.`codigo` FROM  `carrera_tiene_materia` as ctm, `carrera` as car ,`materia` as m,  `clase_profesor_materia` as cm, `programa` as p WHERE m.`id` =  cm.`id_materia` AND cm.`id_profesor` = ? AND p.`id_materia` = m.`id` AND ctm.`id_carrera` = car.`id` AND ctm.`id_materia` = cm.`id_materia`", [$id_profesor]);
-                    }
-                break;
-            default:
-                # code...
-                break;
-        }
+                        $data['materias'] = DB::select("SELECT DISTINCT  m.`id`, m.`nombre`, `semestre`, `turno`,car.`nombre` as `especializacion` FROM  `carrera_tiene_materia` as ctm, `carrera` as car ,`materia` as m,  `clase_profesor_materia` as cm, `programa` as p WHERE m.`id` =  cm.`id_materia` AND cm.`id_profesor` = ? AND p.`id_periodo` = ? AND p.`id_materia` = m.`id` AND ctm.`id_carrera` = car.`id` AND ctm.`id_materia` = cm.`id_materia`", [$id_profesor, $periodo]);
+                        if (empty($data['materias'])) {
+                            $data['materias'] = DB::select("SELECT m.`id`,m.`nombre`, `semestre`, `turno`,car.`nombre` as `especializacion`, p.`codigo` FROM  `carrera_tiene_materia` as ctm, `carrera` as car ,`materia` as m,  `clase_profesor_materia` as cm, `programa` as p WHERE m.`id` =  cm.`id_materia` AND cm.`id_profesor` = ? AND p.`id_materia` = m.`id` AND ctm.`id_carrera` = car.`id` AND ctm.`id_materia` = cm.`id_materia`", [$id_profesor]);
+                        }
+                    break;
+                default:
+                    # code...
+                    break;
+            }
 
-        if (empty($from)) {
-            return response()->json(['status' => "success", 'data' => $data]);
+            if (empty($from)) {
+                return response()->json(['status' => "success", 'data' => $data]);
+            }
         }
-        return $data;
+        else{
+            // return response()->json(['status' => "error", 'data' => "El usuario no existe"]);
+              return self::respuestaError(204, "El usuario no existe");
+        }
+        
     }
 
     /**

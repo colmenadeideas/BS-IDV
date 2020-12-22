@@ -44,7 +44,8 @@ class ProfesoresController extends Controller
 
                     if ($validator->fails()) 
                     { 
-                        return response()->json([ 'error'=> $validator->errors() ]);
+                       //return response()->json([ 'error'=> $validator->errors() ]);
+                       return self::respuestaError(400, $validator->errors());
                     }
                     return $this->nuevo($request->all());
                 break;
@@ -79,7 +80,8 @@ class ProfesoresController extends Controller
                 return response()->json(['status' => "success"]);
             }
             else{
-                return response()->json(['status' =>'error', 'data' => "El Profesor  no ha sido agregado"]);
+                //return response()->json(['status' =>'error', 'data' => "El Profesor  no ha sido agregado"]);
+                return self::respuestaError(400, "El Profesor  no ha sido agregado");
             }
         
     }
@@ -89,20 +91,47 @@ class ProfesoresController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id = NULL)
+    public function show($id = NULL, $materias = NULL)
     {
+       
+
        if (!empty($id)) {
-             $profesor = DB::select("SELECT * FROM `users` as u, `perfil` as p, `profesor` as pr  WHERE pr.`id_user` = u.`id` AND p.`id_user` = pr.`id_user` AND  pr.`status` = 'activo' AND pr.`id` = ?", [$id]);   
-            if (empty($profesor)) {
-                 return response()->json([ 'status' =>'error', 'data' =>"No existe el profesor"]); 
-            }
-           return response()->json([ 'status' => "success", 'data'=>$profesor]);
+
+                $user = User::find($id);
+
+                if (!empty($user)) {
+                    $tipo = $user->getRoleNames();
+                }
+                if ($tipo[0] = "profesor") {
+                    
+                   
+                   if ($materias == "materias") {
+                        $profesor['results']= DB::select("SELECT m.`id`, m.`nombre`, `semestre`, m.`slug`, c.`nombre` as `especialidad`, m.`status` FROM `clase_profesor_materia` as `cpm`, `materia` as `m`, `carrera` as `c`, `carrera_tiene_materia` as `ctm` WHERE cpm.`id_profesor` = ? AND cpm.`id_materia` = m.`id` AND m.`id` = ctm.`id_materia` AND ctm.`id_carrera` = c.`id`", [$id]);
+                        
+                   }
+                   else{
+                        $profesor['results'] = DB::select("SELECT * FROM `users` as u, `perfil` as p, `profesor` as pr  WHERE pr.`id_user` = u.`id` AND p.`id_user` = pr.`id_user` AND  pr.`status` = 'activo' AND pr.`id` = ?", [$id]);
+                        $profesor['results'] = get_object_vars($profesor['results'][0]);
+                   }
+                }
+                else
+                {
+                    return self::respuestaError(400, "El ID ".$id." no pertenece a un profesor");
+                }
+
+                if (empty($user)) {
+                   return self::respuestaError(204, "No hay usuario con el ID ".$id);
+                }
+                if (empty($profesor['results'])) {
+                    return self::respuestaError(400, "El ID ".$id." no pertenece a un profesor");
+                }
+                return response()->json([ 'status' => "success", 'data'=>$profesor]);
        }
        else
        {
             $profesor = DB::select("SELECT * FROM `users` as u, `perfil` as p, `profesor` as pr  WHERE pr.`id_user` = u.`id` AND p.`id_user` = pr.`id_user` AND  pr.`status` = 'activo' ");   
             if (empty($profesor)) {
-                 return response()->json([ 'status' =>'error', 'data' =>"No hay profesores"]); 
+                 return self::respuestaError(204, "No hay profesores disponibles");
             }
            return response()->json([ 'status' => "success", 'data'=>$profesor]);
        }
@@ -117,35 +146,7 @@ class ProfesoresController extends Controller
      */
     public function update(Request $request, $id, $tipo = NULL)
     {
-        switch ($tipo) {
-            case 'reset':
-               $this->validate($request, [
-           
-                'password' => 'required'
-            
-                ]);
-            
-                $input = $request->all();
-                if(!empty($input['password'])){ 
-                    $input['password'] = Hash::make($input['password']);
-                }else{
-                    $input = array_except($input,array('password'));    
-                }
-            
-                $user = User::find($id);
-                $user->update($input);
-                
-            
-                $user->assignRole($request->input('roles'));
-            
-                return redirect()->route('users.index')
-                                ->with('success','Contraseña actualizada exitosamente');
-            break;
-            
-            default:
-                # code...
-                break;
-        }
+        
     }
 
     /**
@@ -161,7 +162,8 @@ class ProfesoresController extends Controller
                 ->update(['status' => 'inactivo']);
 
         if (empty($delete)) {
-               return response()->json([ 'status' =>'error', 'data' => "No se pudo eliminar al profesor"]); 
+            return self::respuestaError(204, "No se pudo eliminar al profesor");
+              // return response()->json([ 'status' =>'error', 'data' => "No se pudo eliminar al profesor"]); 
         }
            return response()->json([ 'status' => "success"]);
     }
