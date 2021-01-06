@@ -92,6 +92,7 @@ class UserController extends Controller
     public function update(Request $request, $id)
     {
         $input = $request->all();
+
         $validator = Validator::make($input, [
             'nombre' => 'nullable|string',
             'apellido' => 'nullable|string',
@@ -103,17 +104,21 @@ class UserController extends Controller
             'fecha_fin' => 'nullable|date',
             'status' => 'nullable|string',
             'tipo' => 'nullable|string',
+            'imagen' => 'nullable|string',
             'email' => 'nullable|email|email|unique:users,email,'.$id,
             
         ]);
         
         if ($validator->fails()) { 
-                    return self::respuestaError(400, $validator->errors());
-
-          //    return response()->json([ 'error'=> $validator->errors() ]);
+            return self::respuestaError(400, $validator->errors());
+        }
+        if(strpos($request->imagen, ';base64')===FALSE){
+            return self::respuestaError(400, "Imagen de perfil no cumple con el formato");
         }
        
-        
+        $estudiante = NULL;
+        $profesor = NULL;
+        $perfil = NULL;
         foreach ($input as $key => $value) 
         {
         	if(empty($value)){
@@ -134,9 +139,7 @@ class UserController extends Controller
         		}
         	}
         }
-        
-        $user = User::find($id);
-        
+        $user = User::find($id);  
         if (!empty($user)) {
             $tipo = $user->getRoleNames();
             $id_pefil =  DB::table('perfil')->where('id_user', $id)->value('id');
@@ -149,8 +152,6 @@ class UserController extends Controller
             	$profile->update($perfil);
             }
             
-            
-            
         }
         else
         {
@@ -161,12 +162,16 @@ class UserController extends Controller
         	case 'estudiante':
         		$id_estudiante =  DB::table('estudiante')->where('id_user', $id)->value('id');
         		$student = Estudiante::find($id_estudiante);
-        		$student->update($estudiante);
+                if ($estudiante) {
+        		    $student->update($estudiante);
+                }
         		break;
         	case 'profesor':
         		$id_profesor =  DB::table('profesor')->where('id_user', $id)->value('id');
         		$teacher = Profesor::find($id_profesor);
-        		$teacher->update($profesor);
+                if($profesor){
+        		  $teacher->update($profesor);
+                }
         		break;
         	
         	default:

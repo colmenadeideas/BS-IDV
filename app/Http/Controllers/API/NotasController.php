@@ -70,7 +70,7 @@ class NotasController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function updateID(Request $request, $id)
     {
         $input = $request->all();
         $validator = Validator::make($input, [
@@ -101,6 +101,28 @@ class NotasController extends Controller
        return response()->json(['status' => "error", 'data' => $data]);
     }
 
+    public function update(Request $request, $claseID,$estudianteID)
+    {
+        $input = $request->all();
+        $validator = Validator::make($input, [
+            'nota' => 'required|numeric',
+        ]);
+        if ($validator->fails()) { 
+              //return response()->json([ 'error'=> $validator->errors() ]);
+              return self::respuestaError(400, $validator->errors());
+        }
+        $id_inscripcion = DB::table('inscripcion')->where('id_estudiante', $estudianteID)->value('id');
+
+        $evaluacion = DB::select("SELECT `id_evaluacion`  FROM `ensenar` WHERE `id_inscripcion` = ? AND `id_clase` = ?",[ $id_inscripcion,$claseID]);
+         
+        $nota = Nota::find($evaluacion[0]->{'id_evaluacion'});
+        $value = $nota->update($input);
+               
+       if ($value == 1) {
+            return response()->json(['status' => "success"]);  
+       }
+       return self::respuestaError(400, "No se pudo actualizar la nota");
+    }
     /**
      * Remove the specified resource from storage.
      *

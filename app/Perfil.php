@@ -8,6 +8,6 @@ class Perfil extends Model
 {
     
     protected $table = 'perfil';
-    protected $fillable = [ 'nombre', 'apellido'    ];
+    protected $fillable = [ 'nombre', 'apellido','imagen'    ];
     public $timestamps = false;
 }

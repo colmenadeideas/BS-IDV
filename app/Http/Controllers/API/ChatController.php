@@ -78,7 +78,11 @@ class ChatController extends Controller
         switch ($tipo) {
             case 'sender':
                 $conversacion = DB::select("SELECT DISTINCT upc1. `id_conversacion` FROM `user_pertence_conversacion` as upc1 INNER JOIN `user_pertence_conversacion` as upc2 ON upc1.`id_user` = ? AND upc2.`id_user` =? AND upc1.`id_conversacion` = upc2.`id_conversacion`", [$id_sender,$id_receptor]);
+                if (!$conversacion) {
+                    return self::respuestaError(204, "No hay una conversacion entre ambos usuarios");
+                }
                 $conversacion = $conversacion[0]->{'id_conversacion'};
+                
                 $mensajes = DB::select("SELECT m.`id`,m.`id_user` as `senderID`, `mensaje`,m.`created_at` as `creation_date` FROM `mensaje` as m, `conversacion` as c WHERE c.`id`= ? AND m.`id_conversacion` = c.`id` LIMIT ?", [$conversacion,$qty]);
                 $mensajes = json_decode( json_encode($mensajes), true);
                 $i = 0;
@@ -102,7 +106,7 @@ class ChatController extends Controller
                 
                 break;
             case 'estudiantes':
-                $estudiantes['results'] = DB::select("SELECT e.`id`,`nombre`, `apellido`, `imagen` FROM `estudiante` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
+                $estudiantes['results'] = DB::select("SELECT e.`id`,e.`id_user`,`nombre`, `apellido`, `imagen` FROM `estudiante` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
                 if (!$estudiantes['results']) {
                      return self::respuestaError(204, "No hay estudiantes disponibles");
                 }
@@ -110,7 +114,7 @@ class ChatController extends Controller
 
                 break;
             case 'profesores':
-                $profesores['results'] = DB::select("SELECT e.`id`,`nombre`, `apellido`, `imagen` FROM `profesor` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
+                $profesores['results'] = DB::select("SELECT e.`id`,e.`id_user`,`nombre`, `apellido`, `imagen` FROM `profesor` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
                 if (!$profesores['results']) {
                      return self::respuestaError(204, "No hay profesores disponibles");
                 }

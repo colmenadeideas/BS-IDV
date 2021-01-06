@@ -2,8 +2,17 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\User; 
+use Validator;
+use Illuminate\Http\Request; 
+use App\Http\Controllers\Controller; 
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth; 
+use Symfony\Component\HttpFoundation\Response;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
+
+use DB;
 
 class RespuestaController extends Controller
 {
@@ -25,7 +34,9 @@ class RespuestaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //$data = self::saveImageBase64($request->file, "Alejandra");
+        //var_dump($data);
+        echo "<img src='$request->file'>";
     }
 
     /**
@@ -37,7 +48,7 @@ class RespuestaController extends Controller
     public function show()
     {
         
-        return self::respuestaError(204, "no hay nada");
+       return self::respuestaError(400, $validator->errors());
     }
 
     /**

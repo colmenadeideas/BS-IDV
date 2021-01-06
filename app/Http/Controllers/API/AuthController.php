@@ -24,59 +24,71 @@ class AuthController extends Controller
       
     public function login(Request $request){ 
 
-    $credentials = [
-
-        'email' => $request->username, 
-        'password' => $request->password
-
-    ];
-    
-    if( auth()->attempt($credentials) ){ 
-
-      $user = Auth::user(); 
       
-      $token['role'] = $user->getRoleNames()[0];
-      $usuario = DB::select("SELECT * FROM `perfil` as p  WHERE p.`id_user` = ? ",[$user->id]);
-      //$token['name'] =  $usuario[0]->{'nombre'}." ".$usuario[0]->{'apellido'};
-      $token['id'] =  $user->id;
-      $token['period'] =  DB::table('periodo')->where('status', 'activo')->value('id');
-      $response = self::HTTP_OK;
-      
-      $data['data'] = $token; 
-      $data['status'] = $response; 
-      $idMatter = DB::table('log_conexiones')->insertGetId(
-                    [
-                        'email' => $request->username, 
-                        'data'  =>json_encode($data)
-                    ]); 
-      
-      $token['token'] = $this->get_user_token($user,"TestToken");
-      
-      
-      $datos['results'] = $token;
-      return $this->get_http_response( "success", $datos, $response );
-
-    } else { 
-
-      $error = "Usuario o clave invalido o error en los datos";
-
-      $response = self::HTTP_OK;
-    
-      $data['data'] = $error; 
-      $data['status'] = $response; 
-      //$data['navegador'] = get_browser(null, true);
-      
-      $idMatter = DB::table('log_conexiones')->insertGetId(
-                    [
-                        'email' => $request->username, 
-                        'data'  =>json_encode($data)
-                    ]); 
+      $input = $request->all();
+      $validator = Validator::make($input, [
+              'username' => 'required|email', 
+              'password' => 'required', 
               
-      return $this->get_http_response( "error", $error, $response );
-    } 
+      ]);
+
+      if ($validator->fails()) { 
+        return self::respuestaError(400, $validator->errors());
+      }
+
+      $credentials = [
+
+          'email' => $request->username, 
+          'password' => $request->password
+
+      ];
+    
+      if( auth()->attempt($credentials) ){ 
+
+        $user = Auth::user(); 
+        
+        $token['role'] = $user->getRoleNames()[0];
+        $usuario = DB::select("SELECT * FROM `perfil` as p  WHERE p.`id_user` = ? ",[$user->id]);
+        //$token['name'] =  $usuario[0]->{'nombre'}." ".$usuario[0]->{'apellido'};
+        $token['id'] =  $user->id;
+        $token['period'] =  DB::table('periodo')->where('status', 'activo')->value('id');
+        $response = self::HTTP_OK;
+        
+        $data['data'] = $token; 
+        $data['status'] = $response; 
+        $idMatter = DB::table('log_conexiones')->insertGetId(
+                      [
+                          'email' => $request->username, 
+                          'data'  =>json_encode($data)
+                      ]); 
+        
+        $token['token'] = $this->get_user_token($user,"TestToken");
+        
+        
+        $datos['results'] = $token;
+        return $this->get_http_response( "success", $datos, $response );
+
+      } else { 
+
+        $error = "Usuario o clave invalido o error en los datos";
+
+        $response = self::HTTP_OK;
+      
+        $data['data'] = $error; 
+        $data['status'] = $response; 
+        //$data['navegador'] = get_browser(null, true);
+        
+        $idMatter = DB::table('log_conexiones')->insertGetId(
+                      [
+                          'email' => $request->username, 
+                          'data'  =>json_encode($data)
+                      ]); 
+                
+        return $this->get_http_response( "error", $error, $response );
+      } 
 
   }
-    public function requestUpdatePassword($id)
+  public function requestUpdatePassword($id)
     {
       $user = User::find($id);
       $seguridad['remember_token'] =  Str::random(10);
@@ -84,25 +96,55 @@ class AuthController extends Controller
       //armar el email
       //enviarlo
   }
-    public function UpdatePassword(Request $request, $id,$token)
-    {
+  public function UpdatePassword(Request $request, $id)
+  {
       $user = User::find($id);
-      $rt   = $user->remember_token;
-      if ($rt === $token ) //tambien hay que comparar tiempo
-      {
+      
+     
           $input = $request->all();
           $validator = Validator::make($input, [
-              'password' => 'required', 
-              'password_confirmation' => 'required|same:password'
+              'nueva' => 'required', 
+              'actual' => 'required', 
+              'confirmacion' => 'required|same:nueva'
           ]);
 
           if ($validator->fails()) { 
-            return response()->json([ 'error'=> $validator->errors() ]);
+           return self::respuestaError(400, $validator->errors());
           }
-          $seguridad['password'] =  Hash::make($input['password']);
-          $seguridad['remember_token'] =  Str::random(10);
-          $update = $user->update($seguridad);
-      }
+          $credentials = [
+
+              'email' => $user->email, 
+              'password' => $request->actual
+
+          ];
+
+          if( auth()->attempt($credentials) ){ 
+            $seguridad['password'] =  Hash::make($input['nueva']);
+            $seguridad['remember_token'] =  Str::random(10);
+            $update = $user->update($seguridad);
+            
+            // the message
+            
+
+            // send email
+            $to = $user->email;
+            $nombre = DB::table('perfil')->where('id_user', $id)->value('nombre');
+            $nombre = "Alejandra";
+            $asunto = "¡Hola ".$nombre."!";
+            $msg = "¡Hola ".$nombre."!\n"."Tu contraseña a sido cambiada exitosamente";
+            $msg = wordwrap($msg,70);
+            $to = "adortega90@gmail.com";
+            $headers = "MIME-Version: 1.0" . "\r\n";
+            $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+            $headers .= 'From: <aortega@besign.com.ve>';
+
+          mail($to,$asunto,$msg,$headers);
+
+            return response()->json([ 'status' => "success"]);
+          }
+          else{
+            return self::respuestaError(400, "La clave actual no corresponde");
+          }
       
   }
     public function get_user_token( $user, string $token_name = null ) {

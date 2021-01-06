@@ -15,11 +15,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('login', 'API\AuthController@login');
+/*Route::middleware('auth:api')->get('/user', function (Request $request) {
+    return $request->user();
+});*/
 
-//Programa
+
+
+Route::post('login', 'API\AuthController@login');
 Route::post('programa','API\ProgramaController@store');
 Route::get('programa/{materia?}','API\ProgramaController@show');
+
+Route::get('perfil/{id}','API\PerfilController@show');
 
 //Periodo
 
@@ -78,10 +84,7 @@ Route::put('nota/clase/{claseID}/estudiante/{estudianteID}','API\NotasController
 Route::get('user/{id?}','API\UserController@show');
 Route::put('user/{id?}','API\UserController@update');
 Route::get('users','API\UserController@show');
-Route::get('perfil/{id}','API\PerfilController@show');
-
 //seguridad
-
 //Route::post('seguridad/{id}/{token?}', 'API\AuthController@UpdatePassword');
 Route::put('/user/seguridad/{id}', 'API\AuthController@UpdatePassword');
 
@@ -100,10 +103,43 @@ Route::get('credenciales','API\ProfesoresController@emails');
 Route::get('show','API\ProfesoresController@run');
 Route::get('estudiantes1/add','API\EstudiantesController@add');
 
-//Route::post('imagen','API\RespuestaController@show');//rol
-Route::post('imagen','API\RespuestaController@store');//rol
+Route::get('error','API\RespuestaController@show');//rol
+
+/*Route::post('add/Periodo', 'API\RegistrationController@nuevoPeriodo');
+Route::post('add/Estudiante', 'API\RegistrationController@nuevoEstudiante');
+
+//PAGOS
+Route::get('view/Estudiantes/{periodo?}', 'API\PaymentsController@verEstudiantesInscritos');
+Route::get('view/Pagos', 'API\PaymentsController@verPagosPorAprobar');
+Route::post('update/Pagos', 'API\PaymentsController@registrarPagoEstudiante');
+Route::post('edit/Pagos', 'API\PaymentsController@gestionarPago');
+Route::get('add/delete/{id?}', 'API\RegistrationController@prueba');
+
+//Profesor
+Route::get('view/Profesores/{status?}', 'API\TeacherController@verProfesores');
+Route::get('view/Profesor/{id}', 'API\TeacherController@verProfesor');
+Route::post('create/Profesor', 'API\TeacherController@crear');
+Route::put('edit/Profesor', 'API\TeacherController@editar');
+Route::delete('delete/Profesor/{id}', 'API\TeacherController@eliminar');
+//Progama de estudio
+Route::get('create/Progama','API\StudyProgramController@create');
 
 
+/*Route::middleware('auth:api')->group(function(){
+
+	Route::post('IniciarPeriodo', 'API\RegistrationController@nuevoPeriodo')->name('nuevoPeriodo Registration')->middleware('permission:nuevoPeriodo Registration');
+	
+	Route::post('NuevoEstudiante', 'API\RegistrationController@nuevoEstudiante')->name('nuevoEstudiante Registration')->middleware('permission:nuevoEstudiante Registration');
+	
+	Route::post('EstudiantesInscritos', 'API\PaymentsController@verEstudiantesInscritos')->name('verEstudiantesInscritos Payments')->middleware('permission:verEstudiantesInscritos Payments');
+	
+	Route::post('PagosPorAprobar', 'API\PaymentsController@verPagosPorAprobar')->name('verPagosPorAprobar PaymentverPagosPorAprobar Payments')->middleware('permission:verPagosPorAprobar Payments');
+	
+	Route::post('PagoEstudiante', 'API\PaymentsController@registrarPagoEstudiante')->name('registrarPagoEstudiante Payments')->middleware('permission:registrarPagoEstudiante Payments');
+
+	Route::post('GestionarPago', 'API\PaymentsController@gestionarPago')->name('gestionarPago Payments')->middleware('permission:gestionarPago Payments');
+});
+*/
  
 // Clear application cache:
  Route::get('/clear-cache', function() {
@@ -113,4 +149,3 @@ Route::post('imagen','API\RespuestaController@store');//rol
     $exitCode = Artisan::call('view:clear');
      return 'Application cache cleared';
  });
- 

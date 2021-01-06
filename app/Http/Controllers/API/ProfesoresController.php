@@ -97,33 +97,19 @@ class ProfesoresController extends Controller
 
        if (!empty($id)) {
 
-                $user = User::find($id);
-
-                if (!empty($user)) {
-                    $tipo = $user->getRoleNames();
-                }
-                if ($tipo[0] = "profesor") {
-                    
                    
-                   if ($materias == "materias") {
-                        $profesor['results']= DB::select("SELECT m.`id`, m.`nombre`, `semestre`, m.`slug`, c.`nombre` as `especialidad`, m.`status` FROM `clase_profesor_materia` as `cpm`, `materia` as `m`, `carrera` as `c`, `carrera_tiene_materia` as `ctm` WHERE cpm.`id_profesor` = ? AND cpm.`id_materia` = m.`id` AND m.`id` = ctm.`id_materia` AND ctm.`id_carrera` = c.`id`", [$id]);
+                if ($materias == "materias") {
+                       
+                        $profesor['results']= DB::select("SELECT m.`id`, m.`nombre`, `semestre`, m.`slug`, c.`nombre` as `especialidad`, m.`status` FROM `clase_profesor_materia` as `cpm`, `materia` as `m`, `carrera` as `c`, `carrera_tiene_materia` as `ctm` WHERE cpm.`id_profesor` = ".$id." AND cpm.`id_materia` = m.`id` AND m.`id` = ctm.`id_materia` AND ctm.`id_carrera` = c.`id`");
                         
-                   }
-                   else{
+                }
+                else{
                         $profesor['results'] = DB::select("SELECT * FROM `users` as u, `perfil` as p, `profesor` as pr  WHERE pr.`id_user` = u.`id` AND p.`id_user` = pr.`id_user` AND  pr.`status` = 'activo' AND pr.`id` = ?", [$id]);
                         $profesor['results'] = get_object_vars($profesor['results'][0]);
-                   }
-                }
-                else
-                {
-                    return self::respuestaError(400, "El ID ".$id." no pertenece a un profesor");
                 }
 
-                if (empty($user)) {
-                   return self::respuestaError(204, "No hay usuario con el ID ".$id);
-                }
                 if (empty($profesor['results'])) {
-                    return self::respuestaError(400, "El ID ".$id." no pertenece a un profesor");
+                    return self::respuestaError(204, "No hay información disponible");
                 }
                 return response()->json([ 'status' => "success", 'data'=>$profesor]);
        }
