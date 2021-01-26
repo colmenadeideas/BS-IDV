@@ -18,9 +18,16 @@ class EstudiantesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($periodo = NULL)
     {
-        //
+        if (!$periodo) 
+        {
+          $periodo =  DB::table('periodo')->where('status', 'activo')->value('id');
+        }
+
+        $results = DB::select("SELECT p.`nombre`, `apellido`, p.`imagen`, `semestre` , c.`nombre` as `especialidad` FROM `inscripcion` as i, `estudiante` as e, `perfil` as p, `grupo` as g, `carrera` as c WHERE i.`id_estudiante` = e.`id` AND e.`id_user` = p.`id_user` AND g.`id` = i.`id_grupo` AND g.`id_carrera` = c.`id` AND i.`id_periodo` = ?",[$periodo]);
+        
+        return ($results);       
     }
 
     /**
@@ -35,6 +42,10 @@ class EstudiantesController extends Controller
                 $validator = Validator::make($request->all(), [ 
                       'nombre' => 'required', 
                       'apellido' => 'required', 
+                      'cedula' =>'required|numeric', 
+                      'fecha_nacimiento' =>'required|date', 
+                      'genero' => 'required', 
+                      'direccion' => 'required', 
                       'email' => 'required|email', 
                       'password' => 'required', 
                       'password_confirmation' => 'required|same:password'
@@ -47,6 +58,9 @@ class EstudiantesController extends Controller
                     }
                     return $this->nuevo($request->all());
                 break;
+            case 'regular':
+              # code...
+              break;
                 case 'cuotas':
                    $validator = Validator::make($request->all(), [ 
                       'id_student' => 'required', 
@@ -75,7 +89,6 @@ class EstudiantesController extends Controller
             if(empty($period))
             {
               return self::respuestaError(400, "Periodo no ha iniciado");
-              //return response()->json([ 'status' => 'error', 'data'=> "Periodo no ha iniciado" ]);
             }
 
             $data['role'] = 'estudiante'; 
@@ -88,13 +101,15 @@ class EstudiantesController extends Controller
                             ['id_user' => $user->id, 
                              'nombre' =>$data["nombre"],
                              'apellido' =>$data["apellido"],
-                             'fecha_nacimiento' =>"1990-08-26",
-                             'direccion' =>'direccion' ]);
+                             'fecha_nacimiento' =>$data["fecha_nacimiento"],
+                             'genero' => $data['genero'],
+                             'cedula' =>$data['cedula'],
+                             'direccion' =>$data['direccion'] ]);
             
             $student =  DB::table('estudiante')->insertGetId(
                             ['id_user' => $user->id, 
                              'curriculum' =>"curriculum",
-                             'fecha_inicio' =>"2020-08-26" ]);
+                             'fecha_inicio' =>now() ]);
 
             //pagos de carrera
             $results = DB::select("SELECT * FROM `costo` WHERE `semestre` = 1 AND `id_carrera` = 1");
@@ -108,6 +123,21 @@ class EstudiantesController extends Controller
                           'id_pagos' => $payment, 
                           'id_carrera' =>1 ]);
 
+            if (!$grupo) 
+            {
+              $results = DB::select("SELECT `id` FROM `grupo` WHERE `id_carrera` = 1 AND `id_periodo` = ?",[$period]);
+              $min = 999999999;
+              foreach ($results as $result => $value) 
+              {
+                  $users = DB::table('inscripcion')->where('id_grupo', $value->{'id'})->count();
+                  if ($min > $users) {
+                    $grupo = $value->{'id'};
+                    $min = $users;
+                  }
+                 
+              }
+            }
+
             $inscription = DB::table('inscripcion')->insertGetId([
                                         'id_estudiante' => $student, 
                                         'id_periodo' =>$period,
@@ -119,7 +149,8 @@ class EstudiantesController extends Controller
            
 
             if (!empty($person) and !empty($student) and !empty($inscription)) {
-                return response()->json(['status' => "success"]);
+                $dato["results"]['id'] = $user->id;
+                return response()->json(['status' => "success", "data" =>$dato ]);
             }
             else{
                 return self::respuestaError(400,  "El estudiante no pudo ser inscrito");
@@ -161,6 +192,53 @@ class EstudiantesController extends Controller
      * @return \Illuminate\Http\Response
      */
     //estudiantes/{qty?}/{contenido?}/{id?}
+    public function MostrarEstudiante($id){
+       
+        $user = User::find($id);
+
+                  if (!empty($user)) {
+                     $tipo = $user->getRoleNames();
+                  }
+                 
+                  
+                    if(!empty($tipo) AND $tipo[0] == "estudiante"){
+
+                      $student['results'] = DB::select("SELECT * FROM `inscripcion` as i,`users` as u, `perfil` as p, `estudiante` as e WHERE e.`id` = i.`id_estudiante` AND e.`id_user` = u.`id` AND p.`id_user` = e.`id_user` AND u.`id` = ?", [$id]);
+
+                       return response()->json([ 'status' => "success", 'data'=> $student]);
+                    }
+                    else{
+                      if(empty(!$user)){
+                         //return response()->json(['status' => 'error', 'data' => "No es estudiante"]);
+                         return self::respuestaError(204, "El ID ".$id." no pertence a un estudiante");
+                      }
+                     
+                    }
+    }
+    public function MostrarEstudiantes($period = NULL){
+      if (empty($period)) {
+            $period  = DB::table('periodo')->where('status', 'activo')->value('id');
+      }                   
+      $results['results'] = DB::select("SELECT p.`nombre`,u.`email`,u.`id`,i.`id_estudiante`,i.`id_periodo`,i.`status` FROM `inscripcion` as i, `estudiante` as s, `users` as u,  `perfil` as p WHERE s.`id_user` = u.`id` AND i.`id_estudiante` = s.`id` AND  p.`id_user` = u.`id`AND i.`id_periodo` = ?", [$period]);
+      if (!empty( $results['results'])) {
+         return response()->json(['status' => "success", "data" => $results]);
+      }
+      //return response()->json(['status' => 'error', 'data' => "No hay estudiantes inscritos"]);  
+      return self::respuestaError(204, "No hay estudiantes inscritos");  
+
+    } 
+    public function MostrarEstudiantesAdmin($periodo = NULL){
+        $user = Auth::user(); 
+        if (!$periodo) 
+        {
+          $periodo =  DB::table('periodo')->where('status', 'activo')->value('id');
+        }
+
+        $results['data'] = DB::select("SELECT p.`nombre`, `apellido`, `telefono`,`celular`, p.`imagen`, `semestre` , c.`nombre` as `especialidad` FROM `inscripcion` as i, `estudiante` as e, `perfil` as p, `grupo` as g, `carrera` as c WHERE i.`id_estudiante` = e.`id` AND e.`id_user` = p.`id_user` AND g.`id` = i.`id_grupo` AND g.`id_carrera` = c.`id` AND i.`id_periodo` = ?",[$periodo]);
+        if ($results['data']) {
+          return response()->json([ 'status' => "success", 'data'=> $results['data']]);
+        }
+    }   
     public function show($id, $cont = "info", $period = NULL)
     {
     

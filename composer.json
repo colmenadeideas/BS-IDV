@@ -16,6 +16,7 @@
         "laravel/passport": "^8.4",
         "laravel/tinker": "^2.0",
         "laravelcollective/html": "^6.1",
+        "lcobucci/jwt": "3.3.3",
         "spatie/laravel-permission": "^3.11"
     },
     "require-dev": {

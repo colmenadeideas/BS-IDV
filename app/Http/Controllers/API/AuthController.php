@@ -22,7 +22,7 @@ class AuthController extends Controller
   CONST HTTP_UNAUTHORIZED = Response::HTTP_UNAUTHORIZED;
     
       
-    public function login(Request $request){ 
+  public function login(Request $request){ 
 
       
       $input = $request->all();

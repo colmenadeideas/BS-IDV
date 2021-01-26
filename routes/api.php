@@ -29,21 +29,32 @@ Route::delete('periodo/{codigo}','API\PeriodoController@destroy');
 Route::get('periodo/{id}','API\PeriodoController@show');//Periodo
 
 //Materia
-Route::post('materias','API\MateriasController@store');
-Route::put('materias/{codigo}','API\MateriasController@update');
-Route::delete('materias/{codigo}','API\MateriasController@destroy');
+
+
 Route::get('materias/','API\MateriasController@show');
 Route::get('materia/{id}','API\MateriasController@show');
 Route::get('materia/{id?}/{clases}','API\ClasesController@show');
 
+
+//Carrera
+Route::get('carrera/{id?}','API\CarreraController@show');
+Route::get('carreras/','API\CarreraController@show');
+Route::get('carreras/{id}/periodo/{id_p}','API\CarreraController@showCarrera');
+Route::get('carreras/{id}/{periodo?}','API\CarreraController@show');
 //Estudiantes
 
 Route::post('estudiante/{tipo?}','API\EstudiantesController@store');
-Route::put('estudiante/{id}','API\EstudiantesController@update');
-Route::delete('estudiante/{id}','API\EstudiantesController@destroy');
-Route::get('estudiantes/{id?}/{contenido?}/{periodo?}','API\EstudiantesController@show');
-Route::get('estudiantes/{qty?}/{contenido?}/{id?}','API\EstudiantesController@show');
-Route::get('estudiante/{id}','API\EstudiantesController@show');
+
+//Route::get('estudiantes/{id?}/{contenido?}/{periodo?}','API\EstudiantesController@show');
+//Route::get('estudiantes/{qty?}/{contenido?}/{id?}','API\EstudiantesController@show');
+
+Route::get('estudiante/{id}','API\EstudiantesController@MostrarEstudiante');
+Route::get('estudiantes/{id_periodo?}','API\EstudiantesController@MostrarEstudiantes');
+Route::get('cuenta','API\EstudiantesController@index');
+//estudiantes con roles
+Route::middleware('auth:api')->group(function(){
+	Route::get('estudiates/lista/{periodo?}', 'API\EstudiantesController@MostrarEstudiantesAdmin')->name('MostrarEstudiantesAdmin Estudiantes')->middleware('permission:MostrarEstudiantesAdmin Estudiantes');
+});
 
 //clases
 Route::post('clase/{tipo?}','API\ClasesController@store');

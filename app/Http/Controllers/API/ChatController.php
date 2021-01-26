@@ -39,25 +39,54 @@ class ChatController extends Controller
                     return self::respuestaError(400, $validator->errors());
                     //return response()->json([ 'error'=> $validator->errors() ]);
                 }
+                 $conversacion = DB::select("SELECT DISTINCT upc1. `id_conversacion` FROM `user_pertence_conversacion` as upc1 INNER JOIN `user_pertence_conversacion` as upc2 ON upc1.`id_user` = ? AND upc2.`id_user` =? AND upc1.`id_conversacion` = upc2.`id_conversacion`", [$id_sender,$id_receptor]);
+                 if ($conversacion) {
+                    $status =  DB::table('conversacion')->where('id', $conversacion[0]->{'id_conversacion'})->value('status');
+                    if($status ==="rechazado"){
+                        $band = TRUE;
+                    }
+                    else
+                    {
+                        $band = FALSE;
+                    }
+                 }
                 
-                $data['mensaje'] = $request->content;
-                $data['id_user'] = $id_sender;
-                $mensaje = Mensaje::create($data); 
-                $conversacion = Conversacion::create(); 
-                unset($data);
-                $data['id_user'] = $id_sender;
-                $data['id_conversacion'] = $conversacion->id; 
-                $PertenceAConversacion = PertenceAConversacion::create($data);
-                unset($data);
-                $data['id_user'] = $id_receptor;
-                $data['id_conversacion'] = $conversacion->id; 
-                $PertenceAConversacion = PertenceAConversacion::create($data);
-                unset($data);
-                $data["results"]["senderID"] = $id_sender;
-                $data["results"]["receiverID"] = $id_receptor;
-                $data["results"]["content"] = $request->content;
-                return response()->json([ 'status' => "success", 'data'=>$data]);
+                
+                if(empty($conversacion) OR $band){
+                    $conversacion = Conversacion::create();
+                    $data['mensaje'] = $request->content;
+                    $data['id_user'] = $id_sender;
+                    $data['id_conversacion'] = $conversacion->id; 
+                    $mensaje = Mensaje::create($data); 
+                     
+                    unset($data);
+                    $data['id_user'] = $id_sender;
+                    $data['id_conversacion'] = $conversacion->id; 
+                    $PertenceAConversacion = PertenceAConversacion::create($data);
+                    unset($data);
+                    $data['id_user'] = $id_receptor;
+                    $data['id_conversacion'] = $conversacion->id; 
+                    $PertenceAConversacion = PertenceAConversacion::create($data);
+                    unset($data);
+                    $data["results"]["senderID"] = $id_sender;
+                    $data["results"]["receiverID"] = $id_receptor;
+                    $data["results"]["content"] = $request->content;
+                    return response()->json([ 'status' => "success", 'data'=>$data]);
+                }
+                else{
+                    
+                        $data['mensaje'] = $request->content;
+                        $data['id_user'] = $id_sender;
+                        $data['id_conversacion'] = $conversacion[0]->{'id_conversacion'}; 
 
+                        $mensaje = Mensaje::create($data); 
+                        unset($data);
+                        $data["results"]["senderID"] = $id_sender;
+                        $data["results"]["receiverID"] = $id_receptor;
+                        $data["results"]["content"] = $request->content;
+                        return response()->json([ 'status' => "success", 'data'=>$data]);
+                    
+                }   
                break;
             
            default:
@@ -75,6 +104,8 @@ class ChatController extends Controller
      */
     public function show($tipo=NULL, $id_sender = NULL, $id_receptor = NULL,$qty = NULL)
     {
+       
+        
         switch ($tipo) {
             case 'sender':
                 $conversacion = DB::select("SELECT DISTINCT upc1. `id_conversacion` FROM `user_pertence_conversacion` as upc1 INNER JOIN `user_pertence_conversacion` as upc2 ON upc1.`id_user` = ? AND upc2.`id_user` =? AND upc1.`id_conversacion` = upc2.`id_conversacion`", [$id_sender,$id_receptor]);
@@ -106,7 +137,7 @@ class ChatController extends Controller
                 
                 break;
             case 'estudiantes':
-                $estudiantes['results'] = DB::select("SELECT e.`id`,e.`id_user`,`nombre`, `apellido`, `imagen` FROM `estudiante` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
+                $estudiantes['results'] = DB::select("SELECT e.`id` as `id_estudiante`,e.`id_user`,`nombre`, `apellido`, `imagen` FROM `estudiante` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
                 if (!$estudiantes['results']) {
                      return self::respuestaError(204, "No hay estudiantes disponibles");
                 }
@@ -114,7 +145,7 @@ class ChatController extends Controller
 
                 break;
             case 'profesores':
-                $profesores['results'] = DB::select("SELECT e.`id`,e.`id_user`,`nombre`, `apellido`, `imagen` FROM `profesor` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
+                $profesores['results'] = DB::select("SELECT e.`id`  as `id_profesor`,e.`id_user`,`nombre`, `apellido`, `imagen` FROM `profesor` as e, `perfil` as p WHERE p.`id_user` = e.`id_user`");
                 if (!$profesores['results']) {
                      return self::respuestaError(204, "No hay profesores disponibles");
                 }

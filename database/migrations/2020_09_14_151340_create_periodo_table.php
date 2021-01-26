@@ -18,6 +18,7 @@ class CreatePeriodoTable extends Migration
             $table->string('codigo',10);
             $table->date('fecha_inicio');
             $table->date('fecha_fin');
+            $table->integer('semanas');
             $table->enum('status',['activo','inactivo']);
             
         });

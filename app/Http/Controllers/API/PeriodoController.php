@@ -26,32 +26,51 @@ class PeriodoController extends Controller
     public function store(Request $request)
     {
      
+    
+        $validator = Validator::make($request->all(), [ 
+            "inicio"  => 'required|date',  
+            "finalizacion" => 'required|date', 
+            "semanas"=> 'required', 
+            "carreras" => 'required'
+
+        ]);
+        if ($validator->fails()) { 
+            return response()->json([ 'error'=> $validator->errors() ]);
+        }
+
         $results = DB::select("SELECT * FROM `periodo` WHERE `status` = 'activo'");
         if(!empty($results)){
             DB::table('periodo')
                 ->where('id', $results[0]->{'id'})
                 ->update(['status' => 'inactivo']);
         }
-        $validator = Validator::make($request->all(), [ 
-          'code' => 'required', 
-          'start' => 'required|date', 
-          'end' => 'required|date'
-        ]);
-        if ($validator->fails()) { 
-            return response()->json([ 'error'=> $validator->errors() ]);
-        }
         $data = $request->all(); 
+
         $id = DB::table('periodo')->insertGetId(
-                        ['codigo' => $data["code"], 
-                         'fecha_inicio' =>$data["start"],
-                         'fecha_fin' =>$data["end"],
-                         'status' =>'activo' ]);
-        $success["id"] = $id;
-        $response =  self::HTTP_CREATED;
+                        [
+                         'fecha_inicio' =>$data["inicio"],
+                         'fecha_fin' =>$data["finalizacion"],
+                         'status' =>'activo',
+                         'semanas' => $data['semanas'] ]);
         if (empty($id)) {
-            return response()->json([ 'status' => 'error', 'data' => 'No se pudo iniciar el periodo'  ]);
+            return self::respuestaError(400, "Periodo no creado");
         }
-        return response()->json(['status' => "success"]);
+        for ($i=1; $i <= 6; $i++) { 
+            if (in_array($i, $data['carreras'])) {
+               DB::table('carrera')
+                ->where('id',  $i)
+                ->update(['status' => 'activo','id_periodo' => $id]);
+            }else
+            {
+                DB::table('carrera')
+                ->where('id',  $i)
+                ->update(['status' => 'inactivo']);
+            }
+            
+        }
+        
+        
+       return response()->json([ 'status' => "success", 'data'=> $data]);
 
     }
 
